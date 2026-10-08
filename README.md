@@ -1,7 +1,13 @@
 # 684 Oakcrossing Road · 小镇漫游
 
-A static interactive 3D neighborhood site. The main house is centered for navigation; surrounding homes are white architectural models. The two walkers and tabby cat can roam the neighborhood.
+This repository is prepared for GitHub Pages. The website is in `site/`; the Actions workflow publishes it on each push to `main`.
 
-GitHub Pages deployment is handled by `.github/workflows/pages.yml` and publishes the `site/` directory on pushes to `main`.
+## Publish
 
-The site uses Three.js from its CDN, so browsers need an internet connection. The detailed house and neighborhood data are also included in the HTML; `site/house-skp.glb` and `site/town-layout.json` are source assets.
+1. Create a GitHub repository and upload the contents of this folder, including `.github/workflows/pages.yml`.
+2. In the repository, open **Settings → Pages** and set the build and deployment source to **GitHub Actions**.
+3. Push/commit the files to the `main` branch. Open **Actions** and wait for “Deploy to GitHub Pages” to succeed. GitHub will show the published URL in the deployment environment.
+
+The page uses Three.js from its CDN, so visitors need an internet connection. The page loads the detailed courtyard house from `site/house-skp.glb` and the neighborhood layout from `site/town-layout.json`. Keep these files alongside `index.html` when deploying.
+
+GitHub Pages sites are publicly reachable, including when Pages is enabled for a private repository. Review the address and house layout before publishing.
