@@ -31,7 +31,7 @@ const mat=(color,roughness=1,extra={})=>new THREE.MeshStandardMaterial({color,ro
 // All neighborhood geometry comes from the supplied SketchUp model. Its shared scale is inches to metres.
 const MAP_SCALE=.0254;
 async function fetchAssetJson(name){if(name!=='town-layout.json')throw new Error('未知数据文件：'+name);const response=await fetch(new URL(name,document.baseURI));if(!response.ok)throw new Error('街区数据读取失败：HTTP '+response.status);return response.json()}
-async function parseAssetGlb(name){if(name!=='house-skp.glb')throw new Error('未知模型文件：'+name);const response=await fetch(new URL(name,document.baseURI));if(!response.ok)throw new Error('主屋模型读取失败：HTTP '+response.status);const bytes=await response.arrayBuffer();return await new Promise((resolve,reject)=>new GLTFLoader().parse(bytes,document.baseURI,resolve,reject))}
+async function parseAssetGlb(name){if(name!=='house-skp.glb')throw new Error('未知模型文件：'+name);const response=await fetch(new URL(name,document.baseURI));if(!response.ok)throw new Error('主屋模型读取失败：HTTP '+response.status);const bytes=await response.arrayBuffer();if(bytes.byteLength!==885408)throw new Error('主屋模型文件不完整：'+bytes.byteLength+'/885408 bytes');const header=new DataView(bytes);if(header.getUint32(0,true)!==0x46546c67||header.getUint32(8,true)!==bytes.byteLength)throw new Error('主屋模型 GLB 文件头或总长度无效');return await new Promise((resolve,reject)=>new GLTFLoader().parse(bytes,document.baseURI,resolve,reject))}
 const town=new THREE.Group();scene.add(town);
 let layoutData;
 const worldPoint=p=>new THREE.Vector3((p[0]-layoutData.map.centerX)*MAP_SCALE,0,(layoutData.map.centerY-p[1])*MAP_SCALE);

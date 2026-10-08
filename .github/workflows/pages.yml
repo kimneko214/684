@@ -23,6 +23,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+      - name: Rebuild the verified house GLB from binary parts
+        run: |
+          python3 - <<'PYTHON'
+          from pathlib import Path
+          import hashlib
+          parts = [Path(f"site/house-skp.part-{i:02d}.bin") for i in range(19)]
+          if any(not p.is_file() for p in parts):
+              raise SystemExit("A house model binary part is missing")
+          data = b"".join(p.read_bytes() for p in parts)
+          if len(data) != 885408 or data[:4] != b"glTF" or int.from_bytes(data[8:12], "little") != len(data):
+              raise SystemExit("The rebuilt house GLB failed its size/header check")
+          print("Rebuilt house GLB:", len(data), "bytes; SHA-256", hashlib.sha256(data).hexdigest())
+          Path("site/house-skp.glb").write_bytes(data)
+          PYTHON
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload site
