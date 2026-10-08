@@ -21,7 +21,9 @@ import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 
 const scene=new THREE.Scene();scene.background=new THREE.Color('#e8e5d8');scene.fog=new THREE.Fog('#e8e5d8',2200,4200);
-const camera=new THREE.PerspectiveCamera(46,innerWidth/innerHeight,.1,5000);
+// The neighborhood spans nearly a kilometre. A very small near plane paired with
+// a 5 km far plane wastes depth-buffer precision and makes distant ground layers flicker.
+const camera=new THREE.PerspectiveCamera(46,innerWidth/innerHeight,.5,2600);
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=false;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;document.querySelector('#scene').appendChild(renderer.domElement);
 const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.06;controls.maxPolarAngle=Math.PI*.47;controls.minDistance=8;controls.maxDistance=1800;
 scene.add(new THREE.HemisphereLight('#fff7e6','#73836e',2.0));const sun=new THREE.DirectionalLight('#fff1d1',2.4);sun.position.set(-70,100,36);sun.castShadow=false;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-110;sun.shadow.camera.right=110;sun.shadow.camera.top=110;sun.shadow.camera.bottom=-110;scene.add(sun);
@@ -48,9 +50,10 @@ function frameBuilding(poly,index){if(poly.length<3)return;const pts=poly.map(wo
  for(const p of pts){const target=Math.abs(p.x-ridgeA.x)<Math.abs(p.x-ridgeB.x)?ridgeA:ridgeB;seg({x:p.x,y:height,z:p.z},target)}
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));town.add(new THREE.LineSegments(g,wireMat));
 }
-fetchAssetJson('town-layout.json').then(data=>{layoutData=data;const m=data.map;const width=(m.maxX-m.minX)*MAP_SCALE,depth=(m.maxY-m.minY)*MAP_SCALE;const ground=new THREE.Mesh(new THREE.PlaneGeometry(width+12,depth+12),mat('#9aa487'));ground.rotation.x=-Math.PI/2;ground.position.set(0,-.38,0);town.add(ground);
+fetchAssetJson('town-layout.json').then(data=>{layoutData=data;const m=data.map;const width=(m.maxX-m.minX)*MAP_SCALE,depth=(m.maxY-m.minY)*MAP_SCALE;const ground=new THREE.Mesh(new THREE.PlaneGeometry(width+12,depth+12),mat('#9aa487'));ground.rotation.x=-Math.PI/2;ground.position.set(0,-2,0);town.add(ground);
  const homeX=(m.homeX-m.centerX)*MAP_SCALE,homeZ=(m.centerY-m.homeY)*MAP_SCALE;window.MAP_HOME={x:homeX,z:homeZ};window.MAP_CENTER={x:m.centerX,z:m.centerY};
- for(const p of data.parks)polygonMesh(p,-.32,'#8da184');for(const p of data.water)polygonMesh(p,-.3,'#8ebfc1');for(const p of data.roads)polygonMesh(p,-.25,'#d8d5ce');
+ // Keep mapped surfaces clearly above the single background plane so their depth values do not compete.
+ for(const p of data.parks)polygonMesh(p,-.3,'#8da184');for(const p of data.water)polygonMesh(p,-.15,'#8ebfc1');for(const p of data.roads)polygonMesh(p,-.05,'#d8d5ce');
  for(const line of data.railways)pathLines(line,new THREE.LineBasicMaterial({color:'#74766f',linewidth:2}));
  data.buildings.forEach((p,i)=>frameBuilding(p,i));
  document.querySelector('#status').textContent=`SKP 街区已载入 · ${data.map.counts.buildings} 栋白色建筑`;
