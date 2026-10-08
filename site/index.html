@@ -54,7 +54,7 @@ function frameBuilding(poly,index){if(poly.length<3)return;const pts=poly.map(wo
 const loadState={layout:false,house:false,error:''};function reportLoadState(){const el=document.querySelector('#status');el.textContent=loadState.error||(!loadState.layout?'正在载入街区…':!loadState.house?'街区已载入 · 正在载入庭院主屋…':'SKP街区与庭院版主屋均已载入')}const layoutPromise=fetchAssetJson('town-layout.json');layoutPromise.then(data=>{layoutData=data;const m=data.map;const width=(m.maxX-m.minX)*MAP_SCALE,depth=(m.maxY-m.minY)*MAP_SCALE;const ground=new THREE.Mesh(new THREE.PlaneGeometry(width+12,depth+12),new THREE.MeshBasicMaterial({color:'#9aa487',toneMapped:false}));ground.rotation.x=-Math.PI/2;ground.position.set(0,-2,0);town.add(ground);
  const homeX=(m.homeX-m.centerX)*MAP_SCALE,homeZ=(m.centerY-m.homeY)*MAP_SCALE;window.MAP_HOME={x:homeX,z:homeZ};window.MAP_CENTER={x:m.centerX,z:m.centerY};
  // Keep mapped surfaces clearly above the single background plane so their depth values do not compete.
- for(const p of data.parks)polygonMesh(p,-.3,'#9aa487');for(const p of data.water)polygonMesh(p,-.15,'#8ebfc1');for(const p of data.roads)if(isStreetSurface(p))polygonMesh(p,-.05,'#c3c1b7');
+ for(const p of data.parks)polygonMesh(p,-.3,'#9aa487');const waterSeen=new Set();for(const p of data.water){const key=p.map(([x,y])=>`${Math.round(x)},${Math.round(y)}`).sort().join(';');if(!waterSeen.has(key)){waterSeen.add(key);polygonMesh(p,-.15,'#8ebfc1')}}for(const p of data.roads)if(isStreetSurface(p))polygonMesh(p,-.05,'#c3c1b7');
  for(const line of data.railways)pathLines(line,new THREE.LineBasicMaterial({color:'#74766f',linewidth:2}));
  data.buildings.forEach((p,i)=>frameBuilding(p,i));
  loadState.layout=true;reportLoadState();
